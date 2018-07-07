@@ -1,16 +1,16 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ducnguyen
- * Date: 6/7/18
- * Time: 9:26 AM
- */
 
 namespace NinetyNineDesigns\PhpCodingTest\model;
 
+use NinetyNineDesigns\PhpCodingTest\Exceptions\InvalidRecordException;
 
-class Movie
+class Movie extends BaseObject
 {
+    const TYPE = 'Movie';
+
+    const TITILE_INDEX = 'title';
+    const YEAR_INDEX = 'year';
+
     /**
      * @var string
      */
@@ -20,6 +20,42 @@ class Movie
      * @var int
      */
     protected $year;
+
+    /**
+     * @param $movie
+     * @return bool
+     * @throws InvalidRecordException
+     */
+    public function initateMovie($movie)
+    {
+        if(!$this->isValidData($movie))
+        {
+            return false;
+        }
+
+        $this->setTitle($movie[self::TITILE_INDEX]);
+        $this->setYear($movie[self::YEAR_INDEX]);
+    }
+
+    /**
+     * @param $movie
+     * @return bool
+     * @throws InvalidRecordException
+     */
+    protected function isValidData($movie)
+    {
+        if(empty($movie) || is_array($movie))
+        {
+            throw new InvalidRecordException();
+        }
+
+        if(!isset($movie[self::TITILE_INDEX]) || !isset($movie[self::YEAR_INDEX]))
+        {
+            throw new InvalidRecordException();
+        }
+
+        return true;
+    }
 
     /**
      * @return string
