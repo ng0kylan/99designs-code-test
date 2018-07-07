@@ -12,6 +12,24 @@ namespace NinetyNineDesigns\PhpCodingTest\model;
 class Utilities
 {
     /**
+     * @param $stringData
+     * @return bool|mixed
+     */
+    public function convertStringToArray($stringData)
+    {
+        if(empty($stringData)) return false;
+
+        try
+        {
+            return json_decode($stringData);
+        }
+        catch (\Exception $e)
+        {
+            return false;
+        }
+    }
+
+    /**
      * @param $data
      * @param $limit
      * @return bool
