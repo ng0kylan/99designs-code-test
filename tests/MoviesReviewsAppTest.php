@@ -56,4 +56,14 @@ JSON;
     {
         $this->assertEquals($this->results[4], "Plan 9 from outer space (1959): So bad it's bad ½");
     }
+
+    private function formatBytes($bytes, $precision = 2)
+    {
+
+    }
+
+    public function testMemory()
+    {
+
+    }
 }
