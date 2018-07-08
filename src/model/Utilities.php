@@ -31,35 +31,23 @@ class Utilities
 
     /**
      * @param $data
-     * @param $limit
-     * @return bool
+     * @param $trimAmount
+     * @return bool|string
      */
-    public function checkAndTrimCharacters($data, $limit, $maxCharacters)
+    public function trimCharacters($data, $trimAmount)
     {
-        if(empty($data) || !is_numeric($limit))
-        {
-            return false;
-        }
+        if(strlen($data) <= $trimAmount) return $data;
 
-        return count($data) > $limit;
-    }
-
-    private function trimCharacters($data, $maxCharacters)
-    {
-        return substr($data, 0, ($maxCharacters - 1));
+        return substr($data, 0, (strlen($data) - $trimAmount) - 1);
     }
 
     /**
-     * @param $score
-     * @return float|int|string
+     * @param $data
+     * @param $maxCharacters
+     * @return bool|string
      */
-    public function convertScoreToStars($score)
+    public function getMaxCharacters($data, $maxCharacters)
     {
-        if($score < 0)
-        {
-            return "";
-        }
-
-        return "★" * $score;
+        return substr($data, 0, $maxCharacters);
     }
 }
