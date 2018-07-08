@@ -15,35 +15,49 @@ class Transformer
     /** @var Utilities */
     private $utilities;
 
+    public function __construct()
+    {
+        $this->utilities = new Utilities();
+    }
+
     /**
-     * @param $chunks
-     * @param $type
+     * @param string $jsonData
+     * @param string $type
      * @return array|Review[]
      */
-    public function transform($chunks, $type)
+    public function transform($jsonData, $type)
     {
-        if(empty($chunks) || !is_array($chunks)) return [];
+        if(empty($jsonData)) return [];
 
-        if(empty($type) || in_array($type, [Review::TYPE, Movie::TYPE])) return [];
+        if(empty($type) || !in_array($type, [Review::TYPE, Movie::TYPE])) return [];
 
         $this->resetTransformedData();
 
-        foreach ($chunks as $index => $record)
+        try
         {
-            $transformedRecord = $this->transformSingleRecord($record, $type);
+            $records = $this->utilities->convertStringToArray($jsonData);
 
-            if($this->isValidRecord($record))
+            foreach ($records as $index => $record)
             {
-                /**
-                 * Log invalid records to produce invalid records exceptions
-                 * Also continue to process the rest of valid records
-                 * without stopping the application
-                 */
-                $this->invalidRecords[$index] = $record;
-                continue;
-            }
+                $transformedRecord = $this->transformSingleRecord($record, $type);
 
-            $this->transformedData[] = $transformedRecord;
+                if(!$this->isValidRecord($record))
+                {
+                    /**
+                     * Log invalid records to produce invalid records exceptions
+                     * Also continue to process the rest of valid records
+                     * without stopping the application
+                     */
+                    $this->invalidRecords[$index] = $record;
+                    continue;
+                }
+
+                $this->transformedData[$transformedRecord->getMovieTitle()] = $transformedRecord;
+            }
+        }
+        catch(InvalidRecordException $e)
+        {
+            return false;
         }
 
         return $this->transformedData;
@@ -57,23 +71,21 @@ class Transformer
     /**
      * @param $record
      * @param $type
-     * @return bool
+     * @return Movie|Review|bool
      */
     private function transformSingleRecord($record, $type)
     {
         try
         {
-            $transformedRecord = $this->utilities->convertStringToArray($record);
-
             switch ($type)
             {
                 case Review::TYPE:
-                    return (new Review())->initiateReview($transformedRecord);
+                    return (new Review())->initiateReview($record);
 
                     break;
 
                 case Movie::TYPE:
-                    return (new Movie())->initateMovie($transformedRecord);
+                    return (new Movie())->initateMovie($record);
 
                     break;
             }
