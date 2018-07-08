@@ -8,21 +8,19 @@ use NinetyNineDesigns\PhpCodingTest\model\Review;
 use NinetyNineDesigns\PhpCodingTest\model\Transformer;
 use NinetyNineDesigns\PhpCodingTest\model\Utilities;
 
+
 class Application
 {
-    const REVIEWS_FILE_PATH = '/data/movies.json';
-    const MOVIES_FILE_PATH = '/data/movies.json';
-
     /** @var string */
     protected $reviewFullPath = '';
     /** @var string  */
     protected $movieFullPath = '';
 
     /** @var Movie[] */
-    protected $movies;
+    protected $movies = [];
 
     /** @var Review[] */
-    protected $reviews;
+    protected $reviews = [];
 
     /** @var FileIO */
     protected $fileIO;
@@ -38,16 +36,26 @@ class Application
      */
     public function __construct()
     {
-        $this->reviewFullPath = $_SERVER['DOCUMENT_ROOT'] . self::REVIEWS_FILE_PATH;
-        $this->movieFullPath = $_SERVER['DOCUMENT_ROOT'] . self::MOVIES_FILE_PATH;
+        /**
+         * @TODO: convert these attributes into services
+         * and injected to this class
+         *
+         * Prerequisite: install this bundle JMS\DiExtraBundle\Annotation
+         */
+        $this->transformer = new Transformer();
+        $this->utilities = new Utilities();
     }
 
-    public function run()
+    /**
+     * @param $reviewsJson
+     * @param $moviesJson
+     * @return array
+     */
+    public function run($reviewsJson, $moviesJson)
     {
         /**
          * The application will need following classes
          *
-         * - FileIO class is used to read and process data from json files
          * - Transformer class is used to transform raw data into objects
          * - Review class
          * - Movie class
@@ -57,23 +65,26 @@ class Application
         /**
          * Read and transform Data from movies.json and reviews.json
          */
-        $this->readData();
+        $this->readData($reviewsJson, $moviesJson);
 
         /**
          * Process Tweet Reviews for each Movie
          */
+        return $this->processTweets();
     }
 
     /**
+     * @param $reviewsJson
+     * @param $moviesJson
      * @return array|bool|Review[]
      */
-    private function readData()
+    private function readData($reviewsJson, $moviesJson)
     {
         /**
          * Read and transform reviews.json datasource
          */
         $this->reviews = $this->transformer->transform(
-            $this->fileIO->readFile($this->reviewFullPath), Review::TYPE
+            $reviewsJson, Review::TYPE
         );
 
         if(empty($this->reviews) | !is_array($this->reviews)) return false;
@@ -82,7 +93,7 @@ class Application
          * Read and tranform movies.json datasource
          */
         $this->movies = $this->transformer->transform(
-            $this->fileIO->readFile($this->movieFullPath), Movie::TYPE
+            $moviesJson, Movie::TYPE
         );
 
         if(empty($this->movies) || !is_array($this->movies)) return false;
@@ -93,17 +104,38 @@ class Application
          */
         foreach ($this->movies as $movie)
         {
-            if(isset($this->reviews[$movie->getTitle()]))
+            /**
+             * We can have performance slightly better performance from here if
+             * - Implement tweet process result within this loop
+             *
+             * However, to separate of concern and make cleaner code
+             * The process to ouput the tweets should be in a different function
+             */
+            if(isset($this->reviews[$movie->getMovieTitle()]))
             {
-                $this->reviews[$movie->getTitle()]->setMovieYear($movie->getYear());
+                $this->reviews[$movie->getMovieTitle()]->setMovieYear($movie->getYear());
             }
         }
-
-        return $this->reviews;
     }
 
-    private function process()
+    /**
+     * @return array
+     */
+    private function processTweets()
     {
+        if(count($this->reviews) === 0) return [];
 
+        $results = [];
+
+        /**
+         * @var string $index
+         * @var Review $review
+         */
+        foreach ($this->reviews as $index => $review)
+        {
+            $results[] = $review->getTweet($review);
+        }
+
+        return $results;
     }
 }
