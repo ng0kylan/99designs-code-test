@@ -11,15 +11,19 @@ class Movie extends BaseObject
     const TITILE_INDEX = 'title';
     const YEAR_INDEX = 'year';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $title;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     protected $year;
+
+    /**
+     * Movie constructor.
+     */
+    public function __construct()
+    {
+        $this->utilities = new Utilities();
+    }
 
     /**
      * @param $movie
@@ -33,8 +37,10 @@ class Movie extends BaseObject
             return false;
         }
 
-        $this->setTitle($movie[self::TITILE_INDEX]);
-        $this->setYear($movie[self::YEAR_INDEX]);
+        $this->setTitle($movie->{self::TITILE_INDEX});
+        $this->setYear($movie->{self::YEAR_INDEX});
+
+        return $this;
     }
 
     /**
@@ -49,7 +55,7 @@ class Movie extends BaseObject
             throw new InvalidRecordException();
         }
 
-        if(!isset($movie[self::TITILE_INDEX]) || !isset($movie[self::YEAR_INDEX]))
+        if(!isset($movie->{self::TITILE_INDEX}) || !isset($movie->{self::YEAR_INDEX}))
         {
             throw new InvalidRecordException();
         }
@@ -60,7 +66,7 @@ class Movie extends BaseObject
     /**
      * @return string
      */
-    public function getTitle(): string
+    public function getMovieTitle()
     {
         return $this->title;
     }
@@ -68,7 +74,7 @@ class Movie extends BaseObject
     /**
      * @param string $title
      */
-    public function setTitle(string $title): void
+    public function setTitle(string $title)
     {
         $this->title = $title;
     }
@@ -76,7 +82,7 @@ class Movie extends BaseObject
     /**
      * @return int
      */
-    public function getYear(): int
+    public function getYear()
     {
         return $this->year;
     }
@@ -84,8 +90,17 @@ class Movie extends BaseObject
     /**
      * @param int $year
      */
-    public function setYear(int $year): void
+    public function setYear(int $year)
     {
         $this->year = $year;
+    }
+
+    /**
+     * @param int $maxCharacters
+     * @return bool|string
+     */
+    public function setTrimmedTitle($maxCharacters)
+    {
+        $this->title = $this->utilities->getMaxCharacters($this->getMovieTitle(), $maxCharacters);
     }
 }

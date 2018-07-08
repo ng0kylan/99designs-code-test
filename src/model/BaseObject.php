@@ -11,9 +11,17 @@ namespace NinetyNineDesigns\PhpCodingTest\model;
 
 abstract class BaseObject
 {
+    /** @var Utilities */
+    protected $utilities;
+
     /**
      * @param $record
      * @return mixed
      */
     protected abstract function isValidData($record);
+
+    /**
+     * @return string
+     */
+    public abstract function getMovieTitle();
 }
